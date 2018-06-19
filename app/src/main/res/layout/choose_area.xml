@@ -28,9 +28,18 @@
             android:layout_centerVertical="true"/>
     </RelativeLayout>
 
-    <ListView
+    <!--<ListView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:id="@+id/list_view"></ListView>-->
+
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/list_view"></ListView>
+        android:id="@+id/recycler_view"
+        android:background="@drawable/bg_blue">
+    </android.support.v7.widget.RecyclerView>
+
+
 
 </LinearLayout>

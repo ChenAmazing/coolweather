@@ -27,6 +27,7 @@ import com.example.amazing_chen.coolweather.util.HttpUtil;
 import com.example.amazing_chen.coolweather.util.Utility;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -50,6 +51,12 @@ public class WeatherActivity extends AppCompatActivity {
     private String mWeatherId;
     private Button navButton;
     public DrawerLayout drawerLayout;
+    private Button future;
+    private final String TAG = "WeatherActivity";
+    public ArrayList<String> dateList;
+    private ArrayList<String> maxT;
+    private ArrayList<String> minT;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +85,8 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         navButton = (Button) findViewById(R.id.nav_button);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        future = (Button) findViewById(R.id.future);
+
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
@@ -109,10 +118,20 @@ public class WeatherActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+//        future.setOnClickListener(new View.OnClickListener(){
+//
+//            @Override
+//            public void onClick(View v) {
+//                Intent newIntent = new Intent(WeatherActivity.this, FutureActivity.class);
+//                startActivity(newIntent);
+//            }
+//        });
+
     }
 
     public void requestWeather(final String weatherId){
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=67f992159113437bafed39aafa61b1dd";
+//        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
         HttpUtil.sendOKHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -149,7 +168,10 @@ public class WeatherActivity extends AppCompatActivity {
         loadBingPic();
     }
 
-    private  void showWeatherInfo(Weather weather){
+    private  void showWeatherInfo(final Weather weather){
+        dateList = new ArrayList<>();
+        maxT = new ArrayList<>();
+        minT = new ArrayList<>();
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "°C";
@@ -166,9 +188,14 @@ public class WeatherActivity extends AppCompatActivity {
             TextView maxText = (TextView) view.findViewById(R.id.max_text);
             TextView minText = (TextView) view.findViewById(R.id.min_text);
             dateText.setText(forecast.date);
+            dateList.add(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
+            maxT.add(forecast.temperature.max);
+//            float v = Float.parseFloat(forecast.temperature.max);测试数据能不能将String转变为Float
+//            Log.d(TAG,"HH"+v+"HH");
             minText.setText(forecast.temperature.min);
+            minT.add(forecast.temperature.min);
             forecastLayout.addView(view);
         }
         if(weather.aqi != null){
@@ -184,6 +211,17 @@ public class WeatherActivity extends AppCompatActivity {
         weatherLayout.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
+        future.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent newIntent = new Intent(WeatherActivity.this, FutureActivity.class);
+                newIntent.putExtra("date",dateList);
+                newIntent.putExtra("max",maxT);
+                newIntent.putExtra("min",minT);
+                startActivity(newIntent);
+            }
+        });
+
     }
 
     private void loadBingPic(){

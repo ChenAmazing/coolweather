@@ -6,16 +6,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.amazing_chen.coolweather.adapter.CityAdapter;
+import com.example.amazing_chen.coolweather.adapter.RecyclerItemClicklistener;
 import com.example.amazing_chen.coolweather.db.City;
 import com.example.amazing_chen.coolweather.db.County;
 import com.example.amazing_chen.coolweather.db.Province;
@@ -33,6 +36,8 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 
+
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -46,12 +51,17 @@ public class ChooseAreaFragment extends Fragment {
     private List<String> dataList = new ArrayList<>();
     private TextView titleText;
     private Button backButton;
-    private ListView listView;
-    private ArrayAdapter<String> adapter;
+//    private ListView listView;
+//    private ArrayAdapter<String> adapter;
     private int currentLevel;
     private Province selectedProvince;
     private City selectedCity;
     private ProgressDialog progressDialog;
+    public RecyclerView recyclerView;
+    private CityAdapter adapter;
+    private String TAG = "ChooseAreaFragment";
+    public ImageView background;
+
 
     public ChooseAreaFragment() {
         // Required empty public constructor
@@ -64,40 +74,46 @@ public class ChooseAreaFragment extends Fragment {
         View view = inflater.inflate(R.layout.choose_area, container, false);
         titleText = (TextView) view.findViewById(R.id.title_text);
         backButton = (Button) view.findViewById(R.id.back_button);
-        listView = (ListView) view.findViewById(R.id.list_view);
-        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
-        listView.setAdapter(adapter);
+        //        listView = (ListView) view.findViewById(R.id.list_view);
+        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        //        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        adapter = new CityAdapter(dataList);
+        recyclerView.setAdapter(adapter);
+
         return view;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        recyclerView.addOnItemTouchListener(new RecyclerItemClicklistener(getContext(), new RecyclerItemClicklistener.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               if(currentLevel == LEVEL_PROVINCE){
-                   selectedProvince = provinceList.get(position);
-                   queryCities();
-               }else if(currentLevel == LEVEL_CITY){
-                   selectedCity = cityList.get(position);
-                   queryCounties();
-               }else if(currentLevel == LEVEL_COUNTY){
-                   String weatherId = countyList.get(position).getWeatherId();
-                   if(getActivity() instanceof  MainActivity){
-                       Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                       intent.putExtra("weather_id",weatherId);
-                       startActivity(intent);
-                       getActivity().finish();
-                   }else if(getActivity() instanceof WeatherActivity){
-                       WeatherActivity activity = (WeatherActivity) getActivity();
-                       activity.drawerLayout.closeDrawers();
-                       activity.swipeRefresh.setRefreshing(true);
-                       activity.requestWeather(weatherId);
-                   }
-               }
+            public void onItemClick(View view, int position) {
+                Log.d(TAG,"success");
+                if(currentLevel == LEVEL_PROVINCE){
+                    selectedProvince = provinceList.get(position);
+                    queryCities();
+                }else if(currentLevel == LEVEL_CITY){
+                    selectedCity = cityList.get(position);
+                    queryCounties();
+                }else if(currentLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(position).getWeatherId();
+                    if(getActivity() instanceof  MainActivity){
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id",weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+                }
             }
-        });
+        }));
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,7 +137,8 @@ public class ChooseAreaFragment extends Fragment {
                 dataList.add(province.getProvinceName());
             }
             adapter.notifyDataSetChanged();
-            listView.setSelection(0);//默认第一个item显示在第一行
+//            listView.setSelection(0);//默认第一个item显示在第一行
+            recyclerView.setSelected(true);
             currentLevel = LEVEL_PROVINCE;
         }else{
             String address = "http://guolin.tech/api/china";
@@ -139,7 +156,8 @@ public class ChooseAreaFragment extends Fragment {
                 dataList.add(city.getCtiyName());
             }
             adapter.notifyDataSetChanged();
-            listView.setSelection(0);
+//            listView.setSelection(0);
+            recyclerView.setSelected(true);
             currentLevel = LEVEL_CITY;
         }else{
             int provinceCode = selectedProvince.getProvinceCode();
@@ -158,7 +176,8 @@ public class ChooseAreaFragment extends Fragment {
                 dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
-            listView.setSelection(0);
+//            listView.setSelection(0);
+            recyclerView.setSelected(true);
             currentLevel = LEVEL_COUNTY;
         }else{
             int provinceCode = selectedProvince.getProvinceCode();

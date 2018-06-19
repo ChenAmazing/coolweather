@@ -27,6 +27,12 @@
             android:enabled="true"
             android:exported="true">
         </service>
+
+        <activity
+            android:name=".FutureActivity"
+            android:label="@string/title_activity_future"
+            android:theme="@style/AppTheme">
+        </activity>
     </application>
 
 </manifest>
