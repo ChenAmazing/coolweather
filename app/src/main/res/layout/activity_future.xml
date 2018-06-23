@@ -17,7 +17,7 @@
             android:layout_height="match_parent">
     <com.github.mikephil.charting.charts.LineChart
         android:layout_width="700dp"
-        android:layout_height="190dp"
+        android:layout_height="220dp"
         android:layout_gravity="center_vertical"
         android:id="@+id/chart"/>
         </LinearLayout>
